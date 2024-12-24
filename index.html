@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOMA PRO BOT</title>
+    <style>
+        /* إعداد الصفحة العامة */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background-color: #000;
+            color: #00ffcc;
+            overflow-x: hidden;
+        }
+
+        /* الشريط العلوي */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #00ffcc;
+            color: #000;
+            padding: 10px;
+            font-size: 18px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        /* شاشة البداية الثنائية */
+        #binary-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeOut 4s forwards;
+        }
+
+        .binary-code {
+            font-size: 30px;
+            color: #00ffcc;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes fadeOut {
+            100% {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* رأس الموقع */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: #111;
+            border-bottom: 2px solid #00ffcc;
+            margin-top: 50px;
+        }
+
+        .header .logo {
+            width: 150px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #00ffcc;
+            margin: 0;
+        }
+
+        /* الشاشات */
+        .page {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* الأزرار */
+        .btn {
+            background: #00ffcc;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #00cc99;
+        }
+
+        /* القائمة */
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .menu .btn {
+            width: 180px;
+            text-align: center;
+        }
+
+        /* إدخال النص */
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            border: 2px solid #00ffcc;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #111;
+            color: #00ffcc;
+        }
+
+        /* الخطأ */
+        #error-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0px 0px 20px rgba(0, 255, 204, 0.6);
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+        }
+
+        #error-screen img {
+            max-width: 500px;
+            margin-bottom: 20px;
+            border: 3px solid #00ffcc;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 255, 204, 0.6);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #error-screen p {
+            color: #ff0033;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0px 0px 10px rgba(255, 0, 51, 0.8);
+        }
+
+        #error-screen .btn {
+            position: static;
+            margin-top: 10px;
+            background: #ff0033;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.6);
+            box-shadow: 0px 0px 10px rgba(255, 0, 51, 0.8);
+        }
+
+        #error-screen .btn:hover {
+            background: #cc0029;
+            box-shadow: 0px 0px 15px rgba(255, 0, 51, 1);
+        }
+
+        #tutorial-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1200;
+            flex-direction: column;
+            padding: 20px;
+            color: #00ffcc;
+            display: none;
+        }
+
+        #tutorial-screen ul {
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        #tutorial-screen .btn {
+            margin-top: 20px;
+        }
+
+        /* زر الرجوع */
+        .back-btn {
+            background: #555;
+            color: #fff;
+        }
+
+        /* شاشة الحالة */
+        #status-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1200;
+            color: #00ffcc;
+            display: none;
+        }
+
+        @media screen and (max-width: 600px) {
+            .btn {
+                width: 90%;
+                font-size: 14px;
+            }
+
+            .menu .btn {
+                width: 100%;
+            }
+
+            input[type="text"] {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة البداية الثنائية -->
+    <div id="binary-screen">
+        <div class="binary-code">1010101010 1010101010 1010101010</div>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <div id="top-bar">BOMA PRO BOT</div>
+
+    <!-- الشعار الرئيسي -->
+    <header class="header">
+        <img src="https://a.top4top.io/p_3276fqgba1.png" alt="BOMA PRO BOT" class="logo">
+        <h1>BOMA PRO BOT</h1>
+    </header>
+
+    <!-- نافذة الشرح الأولي -->
+    <div id="tutorial-screen">
+        <p>مرحبًا! يبدو أنك تزور الموقع لأول مرة. يمكنك:</p>
+        <ul>
+            <li>تفعيل الحساب باستخدام كود التفعيل.</li>
+            <li>استكشاف الخيارات مثل: سبام الرسائل، زيادة الإعجابات، وغير ذلك.</li>
+            <li>اضغط على "تفعيل" للبدء.</li>
+        </ul>
+        <button class="btn" onclick="closeTutorial()">موافق</button>
+    </div>
+
+    <!-- صفحة التفعيل -->
+    <section id="activation-section" class="page active">
+        <h2>أدخل كود التفعيل</h2>
+        <input type="text" id="activation-code" placeholder="أدخل الكود هنا">
+        <button class="btn" onclick="activate()">تفعيل</button>
+    </section>
+
+    <!-- قائمة الخيارات -->
+    <section id="menu-section" class="page">
+        <h2>الخيارات المتاحة</h2>
+        <div class="menu">
+            <button class="btn" onclick="showPage('spam-messages')">سبام الرسائل</button>
+            <button class="btn" onclick="showPage('spam-requests')">سبام الطلبات</button>
+            <button class="btn" onclick="showPage('increase-likes')">زيادة الإعجابات</button>
+            <button class="btn" onclick="showPage('hide-profile')">إخفاء الملف الشخصي</button>
+            <button class="btn" onclick="showPage('link-info')">معلومات عن الرابطة</button>
+            <button class="btn" onclick="showPage('message-graveyard')">مقبرة الرسائل</button>
+            <button class="btn" onclick="showPage('microphone')">الميكروفون</button>
+            <button class="btn" onclick="showPage('send-bot')">إرسال البوت</button>
+            <button class="btn" onclick="showPage('remove-bot')">إزالة البوت</button>
+            <button class="btn" onclick="showPage('pet')">إضافة حيوان أليف</button>
+        </div>
+    </section>
+
+    <!-- قالب صفحات الخيارات -->
+    <section id="option-template" class="page">
+        <h2 id="option-title"></h2>
+        <input type="text" id="option-id" placeholder="أدخل ID هنا">
+        <button class="btn" onclick="submitID('option-id')">تنفيذ</button>
+        <button class="btn back-btn" onclick="goBack()">رجوع</button>
+    </section>
+
+    <!-- شاشة الخطأ -->
+    <div id="error-screen">
+        <img src="https://g.top4top.io/p_3276rk2kr3.jpg" alt="خطأ">
+        <p>حدث خطأ! تأكد من إدخال البيانات بشكل صحيح.</p>
+        <button class="btn" onclick="closeError()">OK</button>
+    </div>
+
+    <!-- شاشة الحالة -->
+    <div id="status-screen">
+        <p>طلبك قيد المراجعة...</p>
+    </div>
+
+    <script>
+        // شاشة البداية الثنائية
+        window.onload = function () {
+            setTimeout(() => {
+                document.getElementById('binary-screen').style.display = 'none';
+                if (!localStorage.getItem('visited')) {
+                    document.getElementById('tutorial-screen').style.display = 'block';
+                }
+            }, 4000);
+        };
+
+        // إغلاق نافذة الشرح الأولي
+        function closeTutorial() {
+            document.getElementById('tutorial-screen').style.display = 'none';
+            localStorage.setItem('visited', 'true');
+        }
+
+        // التحقق من كود التفعيل
+        function activate() {
+            const code = document.getElementById('activation-code').value;
+            if (code.length >= 8) {
+                document.getElementById('activation-section').classList.remove('active');
+                document.getElementById('menu-section').classList.add('active');
+            } else {
+                showError();
+            }
+        }
+
+        // عرض رسالة الخطأ
+        function showError() {
+            document.getElementById('error-screen').style.display = 'block';
+        }
+
+        function closeError() {
+            document.getElementById('error-screen').style.display = 'none';
+        }
+
+        // عرض صفحة جديدة
+        function showPage(option) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById('option-template').classList.add('active');
+            document.getElementById('option-title').textContent = option;
+        }
+
+        // الرجوع للقائمة
+        function goBack() {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById('menu-section').classList.add('active');
+        }
+
+        // إدخال الـ ID
+        function submitID(inputId) {
+            const idValue = document.getElementById(inputId).value;
+            if (idValue.length < 8) {
+                showError();
+            } else {
+                alert("تم تنفيذ طلبك!");
+            }
+        }
+    </script>
+</body>
+</html>ne')">الميكروفون</button>
+            <button class="btn" onclick="showPage('send-bot')">إرسال البوت</button>
+            <button class="btn" onclick="showPage('remove-bot')">إزالة البوت</button>
+            <button class="btn" onclick="showPage('pet')">إضافة حيوان أليف</button>
+        </div>
+    </section>
+
+    <!-- قالب صفحات الخيارات -->
+    <section id="option-template" class="page">
+        <h2 id="option-title"></h2>
+        <input type="text" id="option-id" placeholder="أدخل ID هنا">
+        <button class="btn" onclick="submitID('option-id')">تنفيذ</button>
+        <button class="btn back-btn" onclick="goBack()">رجوع</button>
+    </section>
+
+    <!-- شاشة الخطأ -->
+    <div id="error-screen" style="display:none;">
+        <img src="https://g.top4top.io/p_3276rk2kr3.jpg" alt="خطأ">
+        <button class="btn" onclick="closeError()">OK</button>
+    </div>
+
+    <!-- شاشة الحالة -->
+    <div id="status-screen" style="display:none;">
+        <p>طلبك قيد المراجعة...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
